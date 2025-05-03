@@ -1,0 +1,294 @@
+<!--    SHOW NOTIFICATION USING JAVASCRIPT -->
+ <!-- https://www.studytonight.com/post/javascript-desktopbrowser-push-notification-example  -- Взято отсюда -->
+ <!-- https://voicebot.su/?=1   - Озвучка текста -->
+
+ <!-- Как сделать так, чтобы setInterval работал и тогда, когда вкладка неактивна в Chrome? -->
+ <!-- https://stackoverflow.com/questions/5927284/how-can-i-make-setinterval-also-work-when-a-tab-is-inactive-in-chrome -->
+<!DOCTYPE html> 
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title id="title">= Таймер 2.0</title>
+<style>
+    .wrapper{
+            max-width: 1280px;
+            width: 100%;
+            min-height: 900px;
+            margin: 0 auto;
+            background-color: rgba(128,128,255,0.5);
+            padding-left: 20px;
+            padding-top: 20px;
+    }
+
+
+    .block-timer-work{
+        margin-bottom: 30px;
+    }
+    .timer-work-label{
+        position: relative;
+    }
+    .timer-work-label::before{
+        content: "Время в минутах";
+        display: block;
+        position: absolute;
+        top: -19px;
+        left: 2px;
+        font-size: 12px;
+    }
+    .timermin{
+        text-align: center;
+    }
+    button{
+        padding: 4px;
+        margin-top: 8px;
+        margin-right: -4px;
+        margin-bottom: -3px;
+        margin-left: 8px;
+        border-radius: 5px;
+        font: 14px Arial;
+        letter-spacing: 1px;
+        border: 1px solid #676868;
+        cursor: pointer;
+    }
+    .btn-start-work{
+        background: linear-gradient(#08bdd9, #e3fdfe);
+    }    
+    .btn-end-work{
+        background: linear-gradient(#00ee00, #e3fdfe);
+    }
+    .btn-ok{
+        display: block;
+        margin: 50px 10px;
+        width: 163px;
+        height: 45px;
+        background: linear-gradient(to bottom, #ffafd3,  #ffc9e2 50%, #ffafd3 );
+        /*      border: 4px double #fff;*/
+        border: 1px solid #fff;
+        border-radius: 50px;
+        /*      box-shadow: 0px 0px 5px #ccc;*/
+        font: bold 20px Arial, sans-serif;
+        margin-bottom: 20px;
+        box-shadow: 0 0 0px 1px RGBA(255, 100, 155, .6),
+            0 0 5px 5px RGBA(0, 0, 0, .1);
+    }
+    button:active{
+        transform: translate(2px,2px);
+    }
+    table.table-work{
+        border: 1px solid #000;
+        border-collapse: collapse;
+        text-align: center;
+    }
+    .table-work td{
+        border: 1px solid #000;
+
+    }   
+
+
+
+
+
+@media (max-width: 500px){
+    body {
+        width: 90%;
+        height: 500px;
+        background: linear-gradient(to top left, yellow , green);
+    }
+}
+</style>
+</head>
+<body>
+    <div class="wrapper">
+		<h3>Таймер для напоминания</h3>
+        <div class="block-timer-work">
+             <label for="" class="timer-work-label"><input type="text" value="45" id="timermin" class="timermin" size="8"> <button class="btn-start-work" id="btnStartWork">Запустить таймер</button> <button class="btn-end-work" id="btnEndWork">Остановить таймер</button></label>
+        </div>
+        <div class="table-work-block">
+            <table class="table-work" id="table_work">
+                <tr>
+                    <td>Время начала работы</td>
+                    <td>Время окончания работы</td>
+                    <td>Общее время работы</td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <button id="btn_ok" class="btn-ok">Принял</button>
+        </div>
+    </div> <!--  End wrapper -->
+
+
+
+<audio id="letsgo" src="sound/letsgo.mp3"></audio>
+<audio id="timer15" src="sound/timer15.mp3"></audio>
+<audio id="timer30" src="sound/timer30.mp3"></audio>
+<audio id="hello" src="sound/hello-andrey.mp3"></audio>
+<audio id="time-over" src="sound/time-over.mp3"></audio>
+<audio id="timer-remember" src="sound/timer-remember.mp3"></audio>
+<audio id="timer-ok" src="sound/ok.mp3"></audio>
+
+
+<script id="script1">
+window.onload = function () { 
+    /*console.log(secundomer,new Date().toISOString(),'hello');       
+    myplay('hello');*/
+}
+</script>
+
+<script>
+            let timerVar, timerMin, timerMinRem, timeEnd, secundomer=0;   // remaining - оставшийся
+            let  run_row, time, timeUnixstart;   /*timeStartTD, timeEndTD, timeTotalTD,*/
+            setInterval(timeOn, 1000);
+			
+           //  document.getElementById('btn-ok').innerText='Test';  // Так работает , btn-ok.onclick = function() { - вызывает ошибку  - SyntaxError
+
+            btnStartWork.onclick = function() {
+               
+                //Добавляем новую строку в таблицу.
+                table_new_tr('table_work');
+                // Получаем текущее время в минутах в time="20:25"
+                timeNowMinSec();
+                // Получаем время unix 1741862892988
+                timeUnixstart = Date.now();
+                // Помещаем время начала работы в ячейку начала работы
+                td_value(0,time);
+                // Указываем время выполнения работы.
+                timeTotal()
+
+                timerMin=document.getElementById('timermin').value;  // === '25 минут' 
+                timerMinRem=Number(parseInt(timerMin));     // === 25
+                timerVar=timerMinRem*60;  // === 25*60
+
+                console.log(secundomer,new Date().toISOString(),'letsgo');
+                   myplay('letsgo');
+            }
+            btnEndWork.onclick = function() {
+                timerVar=0;
+                timeEnd=0;
+                 // Получаем текущее время в минутах в time
+                timeNowMinSec();
+                // Помещаем время окончания работы в ячейку
+                td_value(1,time);
+
+                document.getElementById('title').innerText="Жду запуск";
+                console.log(secundomer,new Date().toISOString(),'timer-ok');
+                myplay('timer-ok');
+            }
+
+/*             btn_ok.onclick = function() {
+                timeEnd=0;
+                document.getElementById('title').innerText="Жду запуск";
+                console.log(secundomer,new Date().toISOString(),'timer-ok');
+                     myplay('timer-ok');
+             }*/
+            function table_new_tr(tableID){
+                let table=document.getElementById(tableID);
+                run_row = table.insertRow(); // По умолчанию новая строка
+                let timeStartTD=run_row.insertCell(0);
+                //td0.id="td_table_0" // Добавить id к новому элементу.
+                let timeEndTD=run_row.insertCell(1);
+                let timeTotalTD=run_row.insertCell(2);
+            } // End table_new_tr
+            function td_value(tdNum, time){
+                run_row.childNodes[tdNum].innerHTML=time;
+            }
+            function timeNowMinSec(){
+                let date_time = new Date();
+                //let iso = now.toISOString(); //2025-03-13T10:48:12.989Z По мировому времени
+                //time=iso.substring(11,16);  
+                // time=date_time.getHours()+':'+date_time.getMinutes(); // Результат : 20:0
+                let hours=date_time.getHours().toString();
+                // if (hours.length===1) hours='0'+hours;
+                let minutes=date_time.getMinutes().toString();
+                if (minutes.length===1) minutes='0'+minutes;
+                time=hours+':'+minutes;
+                // час в вашем текущем часовом поясе  -  date.getHours()
+            }
+            function timeTotal(){
+                let timestamp = Date.now();
+                //let minuteTotal=((timestamp-timeUnixstart))&0xFFFFFF;
+                let minuteTotal=(timestamp-timeUnixstart)/60_000;
+                console.log(minuteTotal,' Разница в милисекундах прошло в интервале ~ 1 минута');
+                minuteTotal=Math.round(minuteTotal);  // round - округляет до ближайшего целого
+                td_value(2,minuteTotal);
+            }
+
+            function timeOn (){
+                secundomer++;
+                if (timerVar>0) {
+
+                    let titleVar;
+                    timerVar--;
+                    if (timerVar%60 === 0) {timerMinRem--; timeTotal() };
+                    titleVar=title();
+                    document.getElementById('title').innerText=titleVar;
+                    // document.getElementById('btnStartWork').style.color='#'+( (timerVar%2)*255).toString(16).repeat(3);
+
+                    if (timerVar===30) { //askForApproval();
+                        console.log(secundomer,new Date().toISOString(),'timer30');
+                            myplay('timer30');
+                    }
+
+                                    
+                    if (timerVar===0) {  
+                    console.log(secundomer,new Date().toISOString(),'time-over');
+                          myplay('time-over');
+                    //askForApproval(); // Запуск уведомления Windows
+
+                    timeEnd=1*60;
+                    timerMinRem='Т.П';
+                    document.getElementById('title').innerText=title();
+                    }
+                }
+                else if (timerVar===0 && timeEnd>0) {
+                    timeEnd--;
+                    if (timeEnd%60 === 0) timeTotal();
+                    document.getElementById('title').innerText=title();
+                    if (timeEnd === 0) {
+                        timeEnd=1*60;
+                        console.log(secundomer,new Date().toISOString(),'timer-remember');
+                        myplay('timer-remember');
+                    }
+                }
+
+            }  // End timeOn
+
+            function title(){
+                if ((timerVar !==0 && timerVar%4 ===0 ) || (timeEnd !==0 && timeEnd%4 ===0 ) ) titleVar='- -'+timerMinRem+'- -'; 
+                    else titleVar='---'+timerMinRem+'---';  
+                return titleVar
+            }
+			function myplay(id){
+                let elem=document.getElementById(id);
+                elem.volume=0.05;
+                elem.play();
+            }
+
+
+
+
+/*            
+            function askForApproval() {
+                if(Notification.permission === "granted") {
+                                                console.log(secundomer,new Date().toISOString(),'Notification.permission','Уведомление if');
+                    createNotification('Внимание!', 'Пора отдохнуть! '+timerMin+' работаешь!', 'img/spider-man.png');
+                }
+                else {
+                    Notification.requestPermission(permission => {
+                        if(permission === 'granted') {
+                            console.log(secundomer,new Date().toISOString(),'requestPermission(permission =>','Уведомление else');
+                            createNotification('Wow! This is great', 'created by @study.tonight', 'https://www.studytonight.com/css/resource.v2/icons/studytonight/st-icon-dark.png');
+                        }
+                    });
+                }
+            }
+            
+            function createNotification(title, text, icon) {
+                const noti = new Notification(title, {
+                    body: text,
+                    icon
+                });
+            }*/
+</script>
+</body>
+</html>

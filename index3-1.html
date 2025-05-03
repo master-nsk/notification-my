@@ -1,0 +1,247 @@
+<!--    SHOW NOTIFICATION USING JAVASCRIPT -->
+ <!-- https://www.studytonight.com/post/javascript-desktopbrowser-push-notification-example  -- Взято отсюда -->
+ <!-- https://voicebot.su/?=1   - Озвучка текста -->
+
+ <!-- Как сделать так, чтобы setInterval работал и тогда, когда вкладка неактивна в Chrome? -->
+ <!-- https://stackoverflow.com/questions/5927284/how-can-i-make-setinterval-also-work-when-a-tab-is-inactive-in-chrome -->
+<!DOCTYPE html> 
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title id="title">= Таймер 3.1 Без звукового сигнала конца времени </title>
+<style>
+    .wrapper{
+            max-width: 1280px;
+            width: 100%;
+            min-height: 900px;
+            margin: 0 auto;
+            background-color: rgba(128,128,255,0.5);
+            padding-left: 20px;
+            padding-top: 20px;
+    }
+
+
+    .block-timer-work{
+        margin-bottom: 30px;
+    }
+    .timer-work-label{
+        position: relative;
+    }
+    .timer-work-label::before{
+        content: "Время в минутах";
+        display: block;
+        position: absolute;
+        top: -19px;
+        left: 2px;
+        font-size: 12px;
+    }
+    .timermin{
+        text-align: center;
+    }
+    button{
+        padding: 4px;
+        margin-top: 8px;
+        margin-right: -4px;
+        margin-bottom: -3px;
+        margin-left: 8px;
+        border-radius: 5px;
+        font: 14px Arial;
+        letter-spacing: 1px;
+        border: 1px solid #676868;
+        cursor: pointer;
+    }
+    .btn-start-work{
+        background: linear-gradient(#08bdd9, #e3fdfe);
+    }    
+    .btn-end-work{
+        background: linear-gradient(#00ee00, #e3fdfe);
+    }
+    .btn-ok{
+        display: block;
+        margin: 50px 10px;
+        width: 163px;
+        height: 45px;
+        background: linear-gradient(to bottom, #ffafd3,  #ffc9e2 50%, #ffafd3 );
+        /*      border: 4px double #fff;*/
+        border: 1px solid #fff;
+        border-radius: 50px;
+        /*      box-shadow: 0px 0px 5px #ccc;*/
+        font: bold 20px Arial, sans-serif;
+        margin-bottom: 20px;
+        box-shadow: 0 0 0px 1px RGBA(255, 100, 155, .6),
+            0 0 5px 5px RGBA(0, 0, 0, .1);
+    }
+    button:active{
+        transform: translate(2px,2px);
+    }
+    table.table-work{
+        border: 1px solid #000;
+        border-collapse: collapse;
+        text-align: center;
+    }
+    .table-work td{
+        border: 1px solid #000;
+
+    }   
+
+
+
+
+
+@media (max-width: 500px){
+    body {
+        width: 90%;
+        height: 500px;
+        background: linear-gradient(to top left, yellow , green);
+    }
+}
+</style>
+</head>
+<body>
+    <div class="wrapper">
+		<h3>Таймер 3.1 - без звукового сигнала об окончании времени</h3>
+        <div class="block-timer-work">
+             <label for="" class="timer-work-label"><input type="text" value="45" id="timermin" class="timermin" size="8"> <button class="btn-start-work" id="btnStartWork">Запустить таймер</button> <button class="btn-end-work" id="btnEndWork">Остановить таймер</button></label>
+        </div>
+        <div class="table-work-block">
+            <table class="table-work" id="table_work">
+                <tr>
+                    <td>Время начала работы</td>
+                    <td>Время окончания работы</td>
+                    <td>Общее время работы</td>
+                </tr>
+            </table>
+        </div>
+    </div> <!--  End wrapper -->
+
+
+
+<audio id="letsgo" src="sound/letsgo.mp3"></audio>
+<audio id="timer15" src="sound/timer15.mp3"></audio>
+<audio id="timer30" src="sound/timer30.mp3"></audio>
+<audio id="hello" src="sound/hello-andrey.mp3"></audio>
+<audio id="time-over" src="sound/time-over.mp3"></audio>
+<audio id="timer-remember" src="sound/timer-remember.mp3"></audio>
+<audio id="timer-ok" src="sound/ok.mp3"></audio>
+
+
+<script id="script1">
+window.onload = function () { 
+    /*console.log(secundomer,new Date().toISOString(),'hello');       
+    myplay('hello');*/
+}
+</script>
+
+<script>
+            let timerVar, timerMin, timerMinRem, timer_end, secundomer=0, timer_go_bool, timer_go_count_bool, timer_one_minute;   // remaining - оставшийся
+            let  run_row, time, timeUnixStart, timeUnixEnd, timeUnixNow;   /*timeStartTD, timeEndTD, timeTotalTD,*/
+            setInterval(timeOn, 1000);
+			
+           //  document.getElementById('btn-ok').innerText='Test';  // Так работает , btn-ok.onclick = function() { - вызывает ошибку  - SyntaxError
+
+            btnStartWork.onclick = function() {
+               
+                //Добавляем новую строку в таблицу.
+                table_new_tr('table_work');
+                // Получаем текущее время в минутах в time="20:25"
+                timeNowMinSec();
+                // Получаем время unix 1741862892988
+                timeUnixStart = Date.now();
+                // Помещаем время начала работы в ячейку начала работы
+                td_value(0,time);
+                // Указываем время выполнения работы.
+                timeTotal()
+
+                timerMin=document.getElementById('timermin').value;  // === '25 минут' 
+                timerMinRem=parseInt(timerMin);     // === 25
+                // console.log(timerMinRem, typeof timerMinRem);
+                // timerVar=timerMinRem*60;  // === 25*60
+                if (timerMinRem>0) {
+                    timeUnixEnd=timeUnixStart+timerMinRem*60_000-1_000; // ~1 секунда погрешность
+                    timer_go_bool=true; // Считаем минуты в таблице
+                    timer_go_count_bool=true; // Считаем минуты в таблице и отсчитываем сколько минут задали
+                    timer_one_minute=60;
+                    console.log(secundomer,new Date().toISOString(),'letsgo');
+                    myplay('letsgo');
+                }
+            }
+            btnEndWork.onclick = function() {
+                timer_go_bool=false;
+                 // Получаем текущее время в минутах в time
+                timeNowMinSec();
+                // Помещаем время окончания работы в ячейку
+                td_value(1,time);
+
+                document.getElementById('title').innerText="Жду запуск";
+                console.log(secundomer,new Date().toISOString(),'timer-ok');
+                myplay('timer-ok');
+            }
+
+            function table_new_tr(tableID){
+                let table=document.getElementById(tableID);
+                run_row = table.insertRow(); // По умолчанию новая строка
+                let timeStartTD=run_row.insertCell(0);
+                //td0.id="td_table_0" // Добавить id к новому элементу.
+                let timeEndTD=run_row.insertCell(1);
+                let timeTotalTD=run_row.insertCell(2);
+            } // End table_new_tr
+            function td_value(tdNum, time){
+                run_row.childNodes[tdNum].innerHTML=time;
+            }
+            function timeNowMinSec(){
+                let date_time = new Date();
+                //let iso = now.toISOString(); //2025-03-13T10:48:12.989Z По мировому времени
+                //time=iso.substring(11,16);  
+                // time=date_time.getHours()+':'+date_time.getMinutes(); // Результат : 20:0
+                let hours=date_time.getHours().toString();
+                // if (hours.length===1) hours='0'+hours;
+                let minutes=date_time.getMinutes().toString();
+                if (minutes.length===1) minutes='0'+minutes;
+                time=hours+':'+minutes;
+                // час в вашем текущем часовом поясе  -  date.getHours()
+            }
+            function timeTotal(){
+                timeUnixNow = Date.now();
+                //let minuteTotal=((timestamp-timeUnixStart))&0xFFFFFF;
+                let minuteTotal=(timeUnixNow-timeUnixStart)/60_000;
+                // console.log(minuteTotal,' Разница в милисекундах прошло в интервале ~ 1 минута');
+                minuteTotal=Math.round(minuteTotal);  // round - округляет до ближайшего целого
+                td_value(2,minuteTotal);
+            }
+
+            function timeOn (){
+                secundomer++;
+                if (timer_go_bool) {
+                    timer_one_minute--;
+                    if (timer_one_minute === 0) { 
+                        timeTotal(); 
+                        timer_one_minute=60; 
+                        console.log(timeUnixNow-timeUnixEnd);
+                        if (timer_go_count_bool && timeUnixNow>timeUnixEnd) {
+                            timer_go_count_bool=false; // перестаем считать минуты
+                            console.log(secundomer,new Date().toISOString(),'time-over');
+                            timerMinRem='END';
+                        }
+                    }
+                    document.getElementById('title').innerText=title();
+
+                } // End If
+
+            }  // End timeOn
+
+            function title(){
+                let titleVar;
+                if (timer_go_count_bool && timer_one_minute%4 ===0 ) {titleVar='- -'+timerMinRem+'- -'; }
+                else if  (timer_go_count_bool === false && timer_one_minute%2 ===0 ) {titleVar='- -'+timerMinRem+'- -'; }
+                else titleVar='---'+timerMinRem+'---';  
+                return titleVar
+            }
+			function myplay(id){
+                let elem=document.getElementById(id);
+                elem.volume=0.05;
+                elem.play();
+            }
+
+</script>
+</body>
+</html>

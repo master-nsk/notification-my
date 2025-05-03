@@ -1,0 +1,163 @@
+<!--    SHOW NOTIFICATION USING JAVASCRIPT -->
+ <!-- https://www.studytonight.com/post/javascript-desktopbrowser-push-notification-example  -- Взято отсюда -->
+ <!-- https://voicebot.su/?=1   - Озвучка текста -->
+<!DOCTYPE html> 
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title id="title">= Таймер</title>
+<style>
+        button{
+        padding: 4px;
+        margin-top: 8px;
+        margin-right: -4px;
+        margin-bottom: -3px;
+        margin-left: 8px;
+        border-radius: 5px;
+        font: 14px Arial;
+        letter-spacing: 1px;
+        border: 1px solid #676868;
+        cursor: pointer;
+    }
+    .btn1{
+        border-color: rgb(135,135,135);
+        background: linear-gradient(#08bdd9, #e3fdfe);
+    }
+    .btn-ok{
+        display: block;
+        margin: 50px 10px;
+        width: 163px;
+        height: 45px;
+        background: linear-gradient(to bottom, #ffafd3,  #ffc9e2 50%, #ffafd3 );
+        /*      border: 4px double #fff;*/
+        border: 1px solid #fff;
+        border-radius: 50px;
+        /*      box-shadow: 0px 0px 5px #ccc;*/
+        font: bold 20px Arial, sans-serif;
+        margin-bottom: 20px;
+        box-shadow: 0 0 0px 1px RGBA(255, 100, 155, .6),
+            0 0 5px 5px RGBA(0, 0, 0, .1);
+    }
+    button:active{
+        transform: translate(2px,2px);
+    }
+    #timermin{
+        text-align: center;
+    }
+@media (max-width: 500px){
+    body {
+        width: 90%;
+        height: 500px;
+        background: linear-gradient(to top left, yellow , green);
+    }
+}
+</style>
+</head>
+<body>
+		<h3>Таймер для напоминания</h3>
+<div>
+     <input type="text" value="1 минут" id="timermin" size="8"> <button class="btn1" id="btn1">Запустить таймер</button>
+   
+     <audio id="letsgo" src="sound/letsgo.mp3"></audio>
+     <audio id="timer15" src="sound/timer15.mp3"></audio>
+     <audio id="timer30" src="sound/timer30.mp3"></audio>
+     <audio id="hello" src="sound/hello-andrey.mp3"></audio>
+     <audio id="time-over" src="sound/time-over.mp3"></audio>
+     <audio id="timer-remember" src="sound/timer-remember.mp3"></audio>
+     <audio id="timer-ok" src="sound/ok.mp3"></audio>
+
+</div>
+<div>
+    <button id="btn_ok" class="btn-ok">Принял</button>
+</div>
+<script id="script1">
+window.onload = function () { 
+    console.log('hello');
+    document.getElementById('hello').play()
+}
+</script>
+
+<script>
+            let timerVar, timerMin, timerMinRem, timeEnd;   // remaining - оставшийся
+            setInterval(timeOn, 1000);
+			
+           //  document.getElementById('btn-ok').innerText='Test';  // Так работает , btn-ok.onclick = function() { - вызывает ошибку  - SyntaxError
+
+            btn1.onclick = function() {
+                timerMin=document.getElementById('timermin').value;  // === '25 минут' 
+                timerMinRem=Number(parseInt(timerMin));     // === 25
+                timerVar=timerMinRem*60;  // === 25*60
+
+                console.log('letsgo');
+                document.getElementById('letsgo').play()
+            }
+             btn_ok.onclick = function() {
+                timeEnd=0;
+                document.getElementById('title').innerText="Жду запуск";
+                console.log('timer-ok');
+                document.getElementById('timer-ok').play()
+             }
+
+            function timeOn (){
+                if (timerVar !== undefined && timerVar!==0) {
+                    let titleVar;
+                    timerVar--;
+                    if (timerVar%60 === 0) timerMinRem--
+                    if (timerVar%4 ===0) titleVar='- -'+timerMinRem+'- -'; 
+                    else titleVar='---'+timerMinRem+'---';  
+                    document.getElementById('title').innerText=titleVar;
+                    // document.getElementById('btn1').style.color='#'+( (timerVar%2)*255).toString(16).repeat(3);
+
+                    if (timerVar===30) { //askForApproval();
+                        console.log('timer30');
+                        document.getElementById('timer30').play()
+                    }
+
+    /*                if (timerVar===15) { //askForApproval();
+                        document.getElementById('timer15').play()
+                    }*/
+                                    
+                    if (timerVar===0) {  
+                    console.log('time-over');
+                    document.getElementById('time-over').play()
+                    //askForApproval(); // Запуск уведомления Windows
+                    document.getElementById('title').innerText="Требуется подтверждение";
+                    timeEnd=1*60;
+                    }
+                }
+                else if (timerVar===0 && timeEnd>0) {
+                    timeEnd--;
+                    if (timeEnd === 0) {
+                        timeEnd=1*60;
+                        console.log('timer-remember');
+                         document.getElementById('timer-remember').play()
+
+                    }
+                }
+
+            };
+			
+            function askForApproval() {
+                if(Notification.permission === "granted") {
+                                                console.log('Notification.permission','Уведомление if');
+                    createNotification('Внимание!', 'Пора отдохнуть! '+timerMin+' работаешь!', 'img/spider-man.png');
+                }
+                else {
+                    Notification.requestPermission(permission => {
+                        if(permission === 'granted') {
+                            console.log('requestPermission(permission =>','Уведомление else');
+                            createNotification('Wow! This is great', 'created by @study.tonight', 'https://www.studytonight.com/css/resource.v2/icons/studytonight/st-icon-dark.png');
+                        }
+                    });
+                }
+            }
+            
+            function createNotification(title, text, icon) {
+                const noti = new Notification(title, {
+                    body: text,
+                    icon
+                });
+            }
+</script>
+</body>
+</html>
